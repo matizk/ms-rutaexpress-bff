@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: bff
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_hpq9a4NAn
+
+  cloud:
+    gateway:
+      routes:
+        - id: catalogo
+          uri: ${CATALOGO_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/catalog/**
+
+        - id: shipments
+          uri: ${SHIPMENTS_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/shipments/**
+
+aws:
+  cognito:
+    client-id: 1ds5emg2v17f554j631p9cg040
