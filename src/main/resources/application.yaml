@@ -9,7 +9,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${JWT_ISSUER_URI}
+          issuer-uri: ${COGNITO_ISSUER_URI}
 
   cloud:
     gateway:
@@ -24,19 +24,12 @@ spring:
           predicates:
             - Path=/api/shipments/**
 
-      globalcors:
-        add-to-simple-url-handler-mapping: true
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
-            allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
-            allowedHeaders: ["*"]
-            allowCredentials: true
-
 app:
   security:
-    jwt:
-      audience: ${JWT_AUDIENCE}
+    cognito:
+      client-id: ${COGNITO_CLIENT_ID}
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
 
 management:
   endpoints:
