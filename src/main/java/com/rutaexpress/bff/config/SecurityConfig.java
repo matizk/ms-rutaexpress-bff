@@ -31,6 +31,7 @@ public class SecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
             .authorizeExchange(exchanges -> exchanges
+            .pathMatchers("/actuator/health").permitAll()
             .pathMatchers("/api/catalog/**").hasAuthority("Admin")
             .pathMatchers("/api/shipments/**").hasAuthority("Admin")
             .anyExchange().authenticated()

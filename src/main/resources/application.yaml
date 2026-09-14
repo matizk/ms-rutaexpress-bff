@@ -9,7 +9,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_hpq9a4NAn
+          issuer-uri: ${JWT_ISSUER_URI}
 
   cloud:
     gateway:
@@ -20,10 +20,32 @@ spring:
             - Path=/api/catalog/**
 
         - id: shipments
-          uri: ${SHIPMENTS_URL:http://localhost:8083}
+          uri: ${SHIPMENTS_URL:http://localhost:5000}
           predicates:
             - Path=/api/shipments/**
 
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
+            allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
+            allowedHeaders: ["*"]
+            allowCredentials: true
+
 aws:
   cognito:
-    client-id: 1ds5emg2v17f554j631p9cg040
+    client-id: ${JWT_CLIENT_ID}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+info:
+  app:
+    name: ms-rutaexpress-bff
