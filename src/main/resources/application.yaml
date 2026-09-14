@@ -33,9 +33,10 @@ spring:
             allowedHeaders: ["*"]
             allowCredentials: true
 
-aws:
-  cognito:
-    client-id: ${JWT_CLIENT_ID}
+app:
+  security:
+    jwt:
+      audience: ${JWT_AUDIENCE}
 
 management:
   endpoints:

@@ -10,13 +10,16 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtValidators;
-import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+
+import java.util.Collection;
 
 import reactor.core.publisher.Mono;
 
@@ -32,8 +35,8 @@ public class SecurityConfig {
 
             .authorizeExchange(exchanges -> exchanges
             .pathMatchers("/actuator/health").permitAll()
-            .pathMatchers("/api/catalog/**").hasAuthority("Admin")
-            .pathMatchers("/api/shipments/**").hasAuthority("Admin")
+            .pathMatchers("/api/catalog/**").hasRole("Admin")
+            .pathMatchers("/api/shipments/**").hasRole("Admin")
             .anyExchange().authenticated()
         )
 
@@ -54,7 +57,7 @@ public class SecurityConfig {
                 new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(
-                new CognitoGrantedAuthoritiesConverter()
+                new EntraGrantedAuthoritiesConverter()
         );
 
         return new ReactiveJwtAuthenticationConverterAdapter(converter);
@@ -66,27 +69,24 @@ public class SecurityConfig {
             @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
             String issuer,
 
-            @Value("${aws.cognito.client-id}")
-            String clientId) {
+            @Value("${app.security.jwt.audience}")
+            String audience) {
 
-        NimbusReactiveJwtDecoder decoder =
-                NimbusReactiveJwtDecoder
-                    .withJwkSetUri(issuer + "/.well-known/jwks.json")
-                    .build();
+        ReactiveJwtDecoder decoder = ReactiveJwtDecoders.fromIssuerLocation(issuer);
 
         OAuth2TokenValidator<Jwt> issuerValidator =
                 JwtValidators.createDefaultWithIssuer(issuer);
 
-        OAuth2TokenValidator<Jwt> clientIdValidator =
-                new JwtClaimValidator<>(
-                    "client_id",
-                    clientId::equals
+        OAuth2TokenValidator<Jwt> audienceValidator =
+                new JwtClaimValidator<Collection<String>>(
+                    JwtClaimNames.AUD,
+                    audiences -> audiences != null && audiences.contains(audience)
                 );
 
-        decoder.setJwtValidator(
+        ((org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder) decoder).setJwtValidator(
             new DelegatingOAuth2TokenValidator<>(
                 issuerValidator,
-                clientIdValidator
+                audienceValidator
             )
         );
 

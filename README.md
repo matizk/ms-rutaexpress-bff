@@ -35,8 +35,11 @@ configurará el origen definitivo en `CORS_ALLOWED_ORIGIN`.
 ## Salud y estado
 
 `GET /actuator/health` está disponible sin JWT para comprobaciones de Docker y
-AWS. Los endpoints de negocio requieren un JWT con la autoridad `Admin`.
+AWS. Los endpoints de negocio requieren un access token de Microsoft Entra ID
+con el rol de aplicación `Admin`.
 
-La rama `matizk` contiene rutas, seguridad JWT, CORS, health check y Docker. La
-decisión final entre Microsoft Entra ID y Cognito se cerrará antes de integrar el
-login Angular, para alinear el emisor, audiencia y roles en todos los componentes.
+Para Entra ID configura `JWT_ISSUER_URI` con el emisor v2.0 de tu tenant y
+`JWT_AUDIENCE` con el identificador expuesto por la API (por ejemplo,
+`api://<id-de-aplicacion-api>`). El BFF valida firma, emisor, expiración y
+audiencia; después convierte el claim `roles` de Entra a autoridades Spring
+Security. El rol `Admin` se configura como *App role* en el registro de la API.
