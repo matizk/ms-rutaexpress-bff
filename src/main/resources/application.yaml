@@ -24,6 +24,11 @@ spring:
           predicates:
             - Path=/api/shipments/**
 
+        - id: report
+          uri: ${REPORT_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/report/**
+
 app:
   security:
     cognito:

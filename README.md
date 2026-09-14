@@ -15,6 +15,7 @@ BFF de RutaExpress para la Entrega 1 de DSY1107.
 |---|---|
 | `/api/catalog/**` | `http://localhost:8081` |
 | `/api/shipments/**` | `http://localhost:5000` |
+| `/api/report/**` | `http://localhost:8082` |
 
 El frontend debe consumir únicamente el BFF o AWS API Gateway; no debe llamar
 directamente a los microservicios de dominio en el despliegue final.
@@ -69,6 +70,7 @@ $env:COGNITO_ISSUER_URI = 'https://cognito-idp.<region>.amazonaws.com/<USER_POOL
 $env:COGNITO_CLIENT_ID = '<APP_CLIENT_ID>'
 $env:CATALOGO_URL = 'http://localhost:8081'
 $env:SHIPMENTS_URL = 'http://localhost:5000'
+$env:REPORT_URL = 'http://localhost:8082'
 $env:CORS_ALLOWED_ORIGIN = 'http://localhost:4200'
 .\mvnw.cmd spring-boot:run
 ```
@@ -80,7 +82,7 @@ Oracle. Utiliza `http://localhost:4200` como origen del frontend; `127.0.0.1` es
 ```powershell
 .\mvnw.cmd clean verify
 docker build -t rutaexpress-bff:local .
-docker run --rm --name rutaexpress-bff -p 8080:8080 --env-file .env -e CATALOGO_URL=http://host.docker.internal:8081 -e SHIPMENTS_URL=http://host.docker.internal:5000 rutaexpress-bff:local
+docker run --rm --name rutaexpress-bff -p 8080:8080 --env-file .env -e CATALOGO_URL=http://host.docker.internal:8081 -e SHIPMENTS_URL=http://host.docker.internal:5000 -e REPORT_URL=http://host.docker.internal:8082 rutaexpress-bff:local
 ```
 
 Para Docker, crea un `.env` local a partir del ejemplo y completa sus valores.

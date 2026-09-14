@@ -42,6 +42,7 @@ class CognitoSecurityIntegrationTest {
                             .sendString(Mono.just(new JWKSet(KEY.toPublicJWK()).toString())))
                     .get("/api/shipments", (req, res) -> res.sendString(Mono.just("shipments")))
                     .get("/api/catalog/services", (req, res) -> res.sendString(Mono.just("catalog")))
+                    .get("/api/report/kpis", (req, res) -> res.sendString(Mono.just("report")))
                     .post("/api/shipments", (req, res) -> res.status(201).sendString(req.receive().asString())))
             .bindNow();
     private static final String ISSUER = "http://127.0.0.1:" + STUB.port();
@@ -54,6 +55,7 @@ class CognitoSecurityIntegrationTest {
         registry.add("COGNITO_CLIENT_ID", () -> CLIENT_ID);
         registry.add("CATALOGO_URL", () -> ISSUER);
         registry.add("SHIPMENTS_URL", () -> ISSUER);
+        registry.add("REPORT_URL", () -> ISSUER);
         registry.add("CORS_ALLOWED_ORIGIN", () -> ORIGIN);
     }
 
@@ -93,6 +95,11 @@ class CognitoSecurityIntegrationTest {
     @Test void validAccessTokenReachesCatalogWithUnchangedPath() throws Exception {
         web.get().uri("/api/catalog/services").headers(h -> h.setBearerAuth(token(b -> {})))
                 .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("catalog");
+    }
+
+    @Test void validAccessTokenReachesReportWithUnchangedPath() throws Exception {
+        web.get().uri("/api/report/kpis").headers(h -> h.setBearerAuth(token(b -> {})))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("report");
     }
 
     @Test void authorizedPostForwardsBodyWithoutCsrfSession() throws Exception {
