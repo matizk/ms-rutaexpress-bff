@@ -24,6 +24,11 @@ spring:
           predicates:
             - Path=/api/shipments/**
 
+        - id: users
+          uri: ${SHIPMENTS_URL:http://localhost:5000}
+          predicates:
+            - Path=/api/users/**
+
         - id: report
           uri: ${REPORT_URL:http://localhost:8082}
           predicates:

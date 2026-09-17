@@ -53,6 +53,7 @@ El grupo se asigna en AWS por un administrador; el usuario no puede elegirlo al 
 | `/api/**` con access token válido pero sin grupo Admin | 403 Forbidden |
 | Ruta de negocio con access token Admin válido | Se reenvía al microservicio |
 | Preflight CORS del origen configurado | Permitido sin token |
+| `POST /api/users` con token Admin | Registro de usuario de aplicación vinculado a Cognito |
 | Otras rutas | Acceso denegado |
 
 No se usa ID token para llamadas a la API. Cognito identifica el cliente de un
