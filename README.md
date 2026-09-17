@@ -28,10 +28,10 @@ directamente a los microservicios de dominio en el despliegue final.
 
 ```text
 Angular obtiene un access token de Cognito
-Angular -> API Gateway -> BFF -> catálogo / shipments -> Oracle
+Angular -> API Gateway -> BFF -> catálogo / shipments -> PostgreSQL por servicio
 ```
 
-El BFF es un gateway reactivo (Spring Cloud Gateway/WebFlux). No accede a Oracle:
+El BFF es un gateway reactivo (Spring Cloud Gateway/WebFlux). No accede directamente a PostgreSQL:
 cada microservicio administra sus datos. Mantiene las rutas completas y el cuerpo
 de las solicitudes al reenviarlas.
 
@@ -82,7 +82,7 @@ $env:CORS_ALLOWED_ORIGIN = 'http://localhost:4200'
 
 Reemplaza los marcadores por los valores reales antes de iniciar sesión. El backend
 escucha en 8080. Inicia catálogo y shipments con sus respectivas configuraciones
-Oracle. Utiliza `http://localhost:4200` como origen del frontend; `127.0.0.1` es otro origen.
+PostgreSQL. Utiliza `http://localhost:4200` como origen del frontend; `127.0.0.1` es otro origen.
 
 ```powershell
 .\mvnw.cmd clean verify
@@ -110,7 +110,7 @@ No registres ni pegues tokens reales en GitHub o en capturas.
 Las pruebas de integración arrancan el BFF real, firman JWT con claves RSA efímeras
 y sirven JWKS y microservicios simulados en loopback. Verifican firma, claims,
 expiración, rechazo de ID tokens, grupos, CORS, GET/POST y rutas del gateway.
-No necesitan AWS ni credenciales y no sustituyen la prueba final con Cognito/Oracle reales.
+No necesitan AWS ni credenciales y no sustituyen la prueba final con Cognito/PostgreSQL reales.
 
 Validación local de esta migración: `mvnw test` aprobó 31 pruebas;
 la imagen Docker compiló con Java 21 y el contenedor respondió salud `UP` (200)
