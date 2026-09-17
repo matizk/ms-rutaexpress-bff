@@ -17,6 +17,10 @@ BFF de RutaExpress para la Entrega 1 de DSY1107.
 | `/api/shipments/**` | `http://localhost:5000` |
 | `/api/report/**` | `http://localhost:8082` |
 
+La consulta `GET /api/shipments/track/{codigo}` es la única ruta de negocio
+pública. Devuelve únicamente código, estado, origen, destino y última actualización;
+no expone nombre ni correo del destinatario.
+
 El frontend debe consumir únicamente el BFF o AWS API Gateway; no debe llamar
 directamente a los microservicios de dominio en el despliegue final.
 
@@ -44,6 +48,7 @@ El grupo se asigna en AWS por un administrador; el usuario no puede elegirlo al 
 | Solicitud | Resultado |
 |---|---|
 | GET `/actuator/health` sin token | 200, estado de salud |
+| GET `/api/shipments/track/{codigo}` sin token | Consulta pública; 200 si existe, 404 si no existe |
 | `/api/**` sin token o con token inválido | 401 Unauthorized |
 | `/api/**` con access token válido pero sin grupo Admin | 403 Forbidden |
 | Ruta de negocio con access token Admin válido | Se reenvía al microservicio |
@@ -107,7 +112,7 @@ y sirven JWKS y microservicios simulados en loopback. Verifican firma, claims,
 expiración, rechazo de ID tokens, grupos, CORS, GET/POST y rutas del gateway.
 No necesitan AWS ni credenciales y no sustituyen la prueba final con Cognito/Oracle reales.
 
-Validación local de esta migración (14-09-2026): `clean verify` aprobó 29 pruebas;
+Validación local de esta migración: `mvnw test` aprobó 31 pruebas;
 la imagen Docker compiló con Java 21 y el contenedor respondió salud `UP` (200)
 y `401` al consultar shipments sin token. El arranque del contenedor se comprobó
 con identificadores ficticios, no con un User Pool real.
@@ -124,9 +129,9 @@ Para el login Angular se coordinará Authorization Code con PKCE. API Gateway
 también validará JWT antes del BFF. El BFF conserva su propia validación; las
 reglas de red deben impedir acceso público directo a los microservicios.
 
-La migración del frontend desde MSAL a Cognito es una tarea separada todavía pendiente.
-El stack existente de Spring Boot 3.2.3 / Cloud 2023.0.2 se conserva en este cambio;
-su actualización de mantenimiento debe revisarse antes de publicar el despliegue.
+El frontend ya está integrado con Cognito mediante Authorization Code con PKCE.
+El stack existente de Spring Boot 3.2.3 / Cloud 2023.0.2 se conserva para esta entrega;
+su actualización de mantenimiento puede revisarse antes de publicar el despliegue.
 
 ## Referencias
 

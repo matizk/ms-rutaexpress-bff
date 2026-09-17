@@ -41,6 +41,7 @@ class CognitoSecurityIntegrationTest {
                             .header("Content-Type", "application/json")
                             .sendString(Mono.just(new JWKSet(KEY.toPublicJWK()).toString())))
                     .get("/api/shipments", (req, res) -> res.sendString(Mono.just("shipments")))
+                    .get("/api/shipments/track/RX-0001", (req, res) -> res.sendString(Mono.just("tracking")))
                     .get("/api/catalog/services", (req, res) -> res.sendString(Mono.just("catalog")))
                     .get("/api/report/kpis", (req, res) -> res.sendString(Mono.just("report")))
                     .post("/api/shipments", (req, res) -> res.status(201).sendString(req.receive().asString())))
@@ -68,6 +69,11 @@ class CognitoSecurityIntegrationTest {
 
     @Test void missingBearerIsUnauthorized() {
         web.get().uri("/api/shipments").exchange().expectStatus().isUnauthorized();
+    }
+
+    @Test void publicTrackingDoesNotRequireBearer() {
+        web.get().uri("/api/shipments/track/RX-0001").exchange().expectStatus().isOk()
+                .expectBody(String.class).isEqualTo("tracking");
     }
 
     @Test void malformedBearerIsUnauthorized() {
