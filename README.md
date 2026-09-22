@@ -118,21 +118,27 @@ la imagen Docker compiló con Java 21 y el contenedor respondió salud `UP` (200
 y `401` al consultar shipments sin token. El arranque del contenedor se comprobó
 con identificadores ficticios, no con un User Pool real.
 
-## Datos pendientes del responsable AWS
+## Despliegue AWS implementado
 
-- Región y User Pool ID (para construir `COGNITO_ISSUER_URI`).
-- App Client ID de la SPA, cliente público sin client secret.
-- Usuario de prueba con grupo exacto `Admin` y otro usuario sin ese grupo.
-- Dominio de Cognito, callback y logout URLs para integrar el frontend.
-- URL de API Gateway y origen definitivo del frontend.
+La entrega utiliza los siguientes componentes en AWS:
 
-Para el login Angular se coordinará Authorization Code con PKCE. API Gateway
-también validará JWT antes del BFF. El BFF conserva su propia validación; las
-reglas de red deben impedir acceso público directo a los microservicios.
+- Cognito User Pool, App Client público sin client secret, Managed Login y grupo
+  exacto `Admin`.
+- Angular integrado mediante Authorization Code con PKCE.
+- API Gateway con stage publicado, CORS, JWT Authorizer y la ruta
+  `ANY /api/{proxy+}` integrada con el BFF.
+- BFF y microservicios ejecutados como contenedores en EC2 mediante Docker Compose.
+- PostgreSQL separado para Catálogo y Envíos dentro del stack de contenedores.
 
-El frontend ya está integrado con Cognito mediante Authorization Code con PKCE.
-El stack existente de Spring Boot 3.2.3 / Cloud 2023.0.2 se conserva para esta entrega;
-su actualización de mantenimiento puede revisarse antes de publicar el despliegue.
+API Gateway valida el JWT antes de reenviar la solicitud. El BFF conserva su propia
+validación de firma, emisor, App Client, vigencia, `token_use=access` y grupo
+`Admin`, por lo que la seguridad no depende únicamente del gateway externo.
+
+Los identificadores y las direcciones del entorno se entregan mediante variables
+como `COGNITO_ISSUER_URI`, `COGNITO_CLIENT_ID`, `CATALOGO_URL`, `SHIPMENTS_URL`,
+`REPORT_URL` y `CORS_ALLOWED_ORIGIN`. Las contraseñas, tokens y credenciales AWS no
+se versionan. El stack existente de Spring Boot 3.2.3 / Cloud 2023.0.2 se conserva
+para esta entrega.
 
 ## Referencias
 
