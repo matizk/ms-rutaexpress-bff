@@ -33,6 +33,10 @@ import reactor.netty.http.server.HttpServer;
 class CognitoSecurityIntegrationTest {
     private static final String CLIENT_ID = "test-app-client";
     private static final String ORIGIN = "http://localhost:4200";
+    private static final String TENANT = "11111111-1111-4111-8111-111111111111";
+    private static final String API = "22222222-2222-4222-8222-222222222222";
+    private static final String SPA = "33333333-3333-4333-8333-333333333333";
+    private static final String AZURE_ISSUER = "https://login.microsoftonline.com/" + TENANT + "/v2.0";
     private static final RSAKey KEY = generateKey();
     private static final RSAKey UNTRUSTED_KEY = generateKey();
     private static final DisposableServer STUB = HttpServer.create().host("127.0.0.1").port(0)
@@ -44,6 +48,11 @@ class CognitoSecurityIntegrationTest {
                     .get("/api/shipments/track/RX-0001", (req, res) -> res.sendString(Mono.just("tracking")))
                     .get("/api/catalog/services", (req, res) -> res.sendString(Mono.just("catalog")))
                     .get("/api/report/kpis", (req, res) -> res.sendString(Mono.just("report")))
+                    .get("/api/messaging/summary", (req, res) -> res.sendString(Mono.just(req.requestHeaders().get(HttpHeaders.AUTHORIZATION))))
+                    .get("/api/rabbitmq/topology", (req, res) -> res.sendString(Mono.just("rabbit-admin")))
+                    .get("/api/operator/shipments", (req, res) -> res.sendString(Mono.just(req.requestHeaders().get(HttpHeaders.AUTHORIZATION))))
+                    .get("/api/operator/confirmations/RX-0001", (req, res) -> res.sendString(Mono.just("accepted-ticket")))
+                    .post("/api/operator/shipments/1/accept", (req, res) -> res.sendString(Mono.just("accepted")))
                     .post("/api/shipments", (req, res) -> res.status(201).sendString(req.receive().asString())))
             .bindNow();
     private static final String ISSUER = "http://127.0.0.1:" + STUB.port();
@@ -57,7 +66,14 @@ class CognitoSecurityIntegrationTest {
         registry.add("CATALOGO_URL", () -> ISSUER);
         registry.add("SHIPMENTS_URL", () -> ISSUER);
         registry.add("REPORT_URL", () -> ISSUER);
+        registry.add("MESSAGING_URL", () -> ISSUER);
         registry.add("CORS_ALLOWED_ORIGIN", () -> ORIGIN);
+        registry.add("app.security.azure.enabled", () -> "true");
+        registry.add("app.security.azure.tenant-id", () -> TENANT);
+        registry.add("app.security.azure.audience", () -> API);
+        registry.add("app.security.azure.client-id", () -> SPA);
+        registry.add("app.security.azure.scope", () -> "operator.access");
+        registry.add("app.security.azure.jwk-set-uri", () -> ISSUER + "/.well-known/jwks.json");
     }
 
     @AfterAll static void stopStub() { STUB.disposeNow(); }
@@ -106,6 +122,19 @@ class CognitoSecurityIntegrationTest {
     @Test void validAccessTokenReachesReportWithUnchangedPath() throws Exception {
         web.get().uri("/api/report/kpis").headers(h -> h.setBearerAuth(token(b -> {})))
                 .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("report");
+    }
+
+    @Test void messagingRouteForwardsTheValidatedBearerTokenUnchanged() {
+        String signedToken = token(b -> {});
+        web.get().uri("/api/messaging/summary").headers(h -> h.setBearerAuth(signedToken))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("Bearer " + signedToken);
+    }
+
+    @Test void rabbitAdminRouteKeepsItsPathAndRequiresAdmin() {
+        web.get().uri("/api/rabbitmq/topology").headers(h -> h.setBearerAuth(token(b -> {})))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("rabbit-admin");
+        web.get().uri("/api/rabbitmq/topology").headers(h -> h.setBearerAuth(token(b -> b.claim("cognito:groups", List.of("Cliente")))))
+                .exchange().expectStatus().isForbidden();
     }
 
     @Test void authorizedPostForwardsBodyWithoutCsrfSession() throws Exception {
@@ -185,6 +214,60 @@ class CognitoSecurityIntegrationTest {
 
     private WebTestClient.ResponseSpec request(String token) {
         return web.get().uri("/api/shipments").headers(h -> h.setBearerAuth(token)).exchange();
+    }
+
+    @Test void azureOperatorCanReadAcceptAndRetrieveConfirmationButCannotAdminister() {
+        String access = azureToken(b -> {});
+        web.get().uri("/api/operator/shipments").headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("Bearer " + access);
+        web.post().uri("/api/operator/shipments/1/accept").headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("accepted");
+        web.get().uri("/api/operator/confirmations/RX-0001").headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("accepted-ticket");
+        for (String route : List.of("/api/catalog/services", "/api/shipments", "/api/rabbitmq/topology",
+                "/api/messaging/summary", "/api/report/kpis")) {
+            web.get().uri(route).headers(h -> h.setBearerAuth(access)).exchange().expectStatus().isForbidden();
+        }
+    }
+    @Test void azureCannotEscalateUsingCognitoGroupOrRoles() {
+        web.get().uri("/api/rabbitmq/topology").headers(h -> h.setBearerAuth(azureToken(b ->
+                        b.claim("cognito:groups", List.of("Admin")).claim("roles", List.of("Admin")))))
+                .exchange().expectStatus().isForbidden();
+    }
+    @Test void cognitoAdminCanReviewOperatorFlowButUnassignedCognitoUserCannot() {
+        web.get().uri("/api/operator/shipments").headers(h -> h.setBearerAuth(token(b -> {})))
+                .exchange().expectStatus().isOk();
+        web.get().uri("/api/operator/shipments").headers(h -> h.setBearerAuth(token(b ->
+                        b.claim("cognito:groups", List.of("Cliente")))))
+                .exchange().expectStatus().isForbidden();
+    }
+    @Test void rejectsWrongAzureTenantAudienceClientScopeAndIdToken() {
+        for (Consumer<JWTClaimsSet.Builder> edit : List.<Consumer<JWTClaimsSet.Builder>>of(
+                b -> b.claim("tid", "other-tenant"), b -> b.audience(SPA),
+                b -> b.claim("azp", "other-client"), b -> b.claim("scp", "User.Read"),
+                b -> b.claim("scp", null), b -> b.claim("oid", null), b -> b.claim("ver", "1.0"),
+                b -> b.issuer("https://untrusted.example"),
+                b -> b.expirationTime(Date.from(Instant.now().minusSeconds(900))))) {
+            web.get().uri("/api/operator/shipments").headers(h -> h.setBearerAuth(azureToken(edit)))
+                    .exchange().expectStatus().isUnauthorized();
+        }
+    }
+    @Test void azureDoesNotAllowUnsupportedMethodsOrUnsignedForgery() {
+        web.delete().uri("/api/operator/shipments/1").headers(h -> h.setBearerAuth(azureToken(b -> {})))
+                .exchange().expectStatus().isForbidden();
+        web.get().uri("/api/operator/shipments").exchange().expectStatus().isUnauthorized();
+        JWTClaimsSet.Builder builder = azureClaims();
+        web.get().uri("/api/operator/shipments").headers(h -> h.setBearerAuth(sign(builder.build(), UNTRUSTED_KEY)))
+                .exchange().expectStatus().isUnauthorized();
+    }
+    private static JWTClaimsSet.Builder azureClaims() {
+        return new JWTClaimsSet.Builder().issuer(AZURE_ISSUER).subject("operator-subject").audience(API)
+                .issueTime(Date.from(Instant.now())).expirationTime(Date.from(Instant.now().plusSeconds(600)))
+                .claim("tid", TENANT).claim("azp", SPA).claim("ver", "2.0")
+                .claim("oid", "44444444-4444-4444-8444-444444444444").claim("scp", "operator.access");
+    }
+    private static String azureToken(Consumer<JWTClaimsSet.Builder> edit) {
+        JWTClaimsSet.Builder builder = azureClaims(); edit.accept(builder); return sign(builder.build(), KEY);
     }
 
     private static JWTClaimsSet.Builder claims() {
