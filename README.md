@@ -1,8 +1,8 @@
 # ms-rutaexpress-bff
 
-> EV2 en revision: rama `codex/feature-ev2-mensajeria`, PR hacia develop. main conserva EV1. Ver [Gitflow](CONTRIBUTING.md). Cloud/login institucional pendientes de verificacion real.
+> Versión de integración EV2: `develop`, mediante el [PR #2](https://github.com/matizk/ms-rutaexpress-bff/pull/2). `main` conserva EV1 hasta una release validada. Ver [Gitflow](CONTRIBUTING.md). El login institucional y AWS/RDS siguen pendientes de verificación real.
 
-BFF de RutaExpress para la Entrega 1 de DSY1107.
+BFF de RutaExpress para DSY1107, con administración de EV1 y rutas del operador/mensajería de EV2.
 
 ## Responsabilidad
 
@@ -18,6 +18,10 @@ BFF de RutaExpress para la Entrega 1 de DSY1107.
 | `/api/catalog/**` | `http://localhost:8081` |
 | `/api/shipments/**` | `http://localhost:5000` |
 | `/api/report/**` | `http://localhost:8082` |
+| `/api/users/**` | `http://localhost:5000` |
+| `/api/operator/shipments/**` | `http://localhost:5000` |
+| `/api/operator/confirmations/**` | `http://localhost:8084` |
+| `/api/messaging/**` y `/api/rabbitmq/**` | `http://localhost:8084` |
 
 La consulta `GET /api/shipments/track/{codigo}` es la única ruta de negocio
 pública. Devuelve únicamente código, estado, origen, destino y última actualización;
@@ -120,9 +124,9 @@ la imagen Docker compiló con Java 21 y el contenedor respondió salud `UP` (200
 y `401` al consultar shipments sin token. El arranque del contenedor se comprobó
 con identificadores ficticios, no con un User Pool real.
 
-## Despliegue AWS implementado
+## Antecedente de EV1: no acredita el despliegue EV2
 
-La entrega utiliza los siguientes componentes en AWS:
+La documentación anterior de EV1 describía estos componentes en AWS. No se han vuelto a verificar aquí y NO son instrucciones de despliegue EV2; esta última exige RDS, identidad Azure para operador y rutas separadas. Usar el paquete `ms-rutaexpress-shipments/deploy/aws/README.md`, no copiar el catch-all anterior:
 
 - Cognito User Pool, App Client público sin client secret, Managed Login y grupo
   exacto `Admin`.
@@ -157,4 +161,4 @@ El BFF admite opcionalmente tokens delegados Azure v2 del tenant, API y SPA conf
 
 ## Gitflow EV2
 
-La funcionalidad esta en `codex/feature-ev2-mensajeria`, con PR hacia `develop`; main conserva la entrega anterior. Ver [CONTRIBUTING.md](CONTRIBUTING.md). CI ejecuta Maven verify en Java 21 sin credenciales cloud. No confundir un PR o una prueba local con login Azure/AWS verificados.
+La versión de integración está destinada a `develop` por el PR enlazado; `main` conserva la entrega anterior hasta una release aprobada. Ver [CONTRIBUTING.md](CONTRIBUTING.md). CI ejecuta Maven verify en Java 21 sin credenciales cloud. No confundir un PR o una prueba local con login Azure/AWS verificados.
