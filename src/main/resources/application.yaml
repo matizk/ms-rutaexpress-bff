@@ -34,8 +34,30 @@ spring:
           predicates:
             - Path=/api/report/**
 
+        - id: messaging
+          uri: ${MESSAGING_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/messaging/**,/api/rabbitmq/**
+
+        - id: operator-shipments
+          uri: ${SHIPMENTS_URL:http://localhost:5000}
+          predicates:
+            - Path=/api/operator/shipments/**
+
+        - id: operator-confirmations
+          uri: ${MESSAGING_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/operator/confirmations/**
+
 app:
   security:
+    azure:
+      enabled: ${AZURE_ENABLED:false}
+      tenant-id: ${AZURE_TENANT_ID:}
+      audience: ${AZURE_API_CLIENT_ID:}
+      client-id: ${AZURE_SPA_CLIENT_ID:}
+      scope: ${AZURE_OPERATOR_SCOPE:operator.access}
+      jwk-set-uri: ${AZURE_JWK_SET_URI:}
     cognito:
       client-id: ${COGNITO_CLIENT_ID:41v988atubk0lrcmto285tk77i}
   cors:

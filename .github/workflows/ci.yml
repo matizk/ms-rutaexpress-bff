@@ -1,0 +1,42 @@
+name: CI EV2
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  java:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Comprobar destino Gitflow del PR
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          if [[ "$BASE_BRANCH" == main ]]; then
+            case "$HEAD_BRANCH" in
+              codex/release-*|codex/hotfix-*) ;;
+              *) printf 'main solo recibe release/hotfix por PR. Funcionalidades hacia develop.\\n'; exit 1 ;;
+            esac
+          fi
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Compilar, probar y empaquetar sin nube
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp verify
