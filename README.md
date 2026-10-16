@@ -1,5 +1,7 @@
 # ms-rutaexpress-bff
 
+> EV2 en revision: rama `codex/feature-ev2-mensajeria`, PR hacia develop. main conserva EV1. Ver [Gitflow](CONTRIBUTING.md). Cloud/login institucional pendientes de verificacion real.
+
 BFF de RutaExpress para la Entrega 1 de DSY1107.
 
 ## Responsabilidad
@@ -144,3 +146,15 @@ para esta entrega.
 
 - [AWS: verificar JWT de Cognito](https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-verifying-a-jwt.html)
 - [Spring Security: Resource Server reactivo](https://docs.spring.io/spring-security/reference/reactive/oauth2/resource-server/jwt.html)
+
+## Rutas EV2 de mensajería
+
+`/api/messaging/**` y `/api/rabbitmq/**` se enrutan a `MESSAGING_URL` (por defecto `http://localhost:8084`). Conservan JWT Cognito y grupo Admin; el bearer token se reenvía al servicio, que también lo valida. El stack EV2 y su prueba se ejecutan desde la carpeta hermana `ms-rutaexpress-shipments`, según `EV2_LOCAL.md`.
+
+## Operador Azure (código preparado, tenant real pendiente)
+
+El BFF admite opcionalmente tokens delegados Azure v2 del tenant, API y SPA configurados, además de Cognito. Azure solo habilita GET de `/api/operator/shipments`, su detalle y `/api/operator/confirmations/{codigo}`, y POST de `/api/operator/shipments/{id}/accept`. Envíos y Mensajería vuelven a comprobar el token. No concede Catálogo, Reportes, Usuarios ni Rabbit Admin al operador. La selección de claves solo usa emisores preconfigurados; nunca una URL recibida del JWT. Azure está deshabilitado por defecto. Configuración y prueba institucional pendiente en `frontend-rutaexpress/docs/AZURE_OPERADOR.md`; el script hermano `ms-rutaexpress-shipments/configurar-azure.ps1` mantiene los valores alineados.
+
+## Gitflow EV2
+
+La funcionalidad esta en `codex/feature-ev2-mensajeria`, con PR hacia `develop`; main conserva la entrega anterior. Ver [CONTRIBUTING.md](CONTRIBUTING.md). CI ejecuta Maven verify en Java 21 sin credenciales cloud. No confundir un PR o una prueba local con login Azure/AWS verificados.
