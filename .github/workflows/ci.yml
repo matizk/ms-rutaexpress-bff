@@ -1,9 +1,9 @@
 name: CI EV2
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [desarrollo, main]
   push:
-    branches: [develop]
+    branches: [desarrollo]
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,8 +27,8 @@ jobs:
         run: |
           if [[ "$BASE_BRANCH" == main ]]; then
             case "$HEAD_BRANCH" in
-              codex/release-*|codex/hotfix-*) ;;
-              *) printf 'main solo recibe release/hotfix por PR. Funcionalidades hacia develop.\\n'; exit 1 ;;
+              release/*|hotfix/*) ;;
+              *) printf 'main solo recibe release/hotfix por PR. Funcionalidades hacia desarrollo.\\n'; exit 1 ;;
             esac
           fi
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5

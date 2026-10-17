@@ -4,7 +4,8 @@ Describir funcionalidad y por que pertenece a EV2.
 
 ## Gitflow y dependencias
 
-- Base: develop (feature) o main (release/hotfix aprobado).
+- Base: desarrollo (cambios de una rama personal) o main (release/hotfix aprobado).
+- Rama de trabajo: matizk en esta copia; cada compañero utiliza la suya.
 - Repositorios/PR relacionados:
 - Estado: avance local / integracion / release candidata.
 
