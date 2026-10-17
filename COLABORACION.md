@@ -8,8 +8,8 @@ Convención acordada por el equipo el 17-10-2026: `matizk` para el trabajo perso
 - `desarrollo`: integración del equipo; recibe cambios mediante solicitud de integración revisada.
 - `matizk`: rama personal de esta copia. Se actualiza desde desarrollo antes de continuar, preservando cambios propios.
 - Los otros integrantes conservan sus ramas personales y abren sus PR hacia desarrollo.
-- `entrega/<version>`: preparar desde desarrollo cuando estén aprobadas las pruebas institucionales/cloud; PR a main y sincronización posterior con desarrollo.
-- `correccion/<descripcion>`: corrección urgente de main, con retorno también a desarrollo.
+- `release/<version>`: preparar desde desarrollo cuando estén aprobadas las pruebas institucionales/cloud; PR a main y sincronización posterior con desarrollo.
+- `hotfix/<descripcion>`: corrección urgente de main, con retorno también a desarrollo.
 
 Flujo habitual: rama personal → PR a desarrollo → revisión/pruebas → confirmación de fusión. No crear nombres o commits para aparentar participación. El código integrado no equivale a despliegue ni a evaluación terminada.
 
@@ -29,9 +29,9 @@ Para ejecutar el proyecto y migrar una copia que aún tenga develop, consultar l
 
 ## Idioma y mantenimiento documental
 
-Los repositorios, las guías y los nuevos mensajes descriptivos se escriben en español. Se conserva `README.md` por convención de GitHub y los nombres técnicos que exige cada herramienta (por ejemplo `Dockerfile`, `pom.xml`, `.github/workflows` o rutas de API). No traducir identificadores internos ni reescribir commits compartidos para cambiar su idioma. Los textos de la propia interfaz de GitHub no pertenecen al proyecto.
+Las guías y los nuevos mensajes descriptivos se escriben en español. Los nombres técnicos frontend-rutaexpress y ms-rutaexpress-bff se conservan, igual que las convenciones release/hotfix. Se conserva `README.md` por convención de GitHub y los nombres técnicos que exige cada herramienta (por ejemplo `Dockerfile`, `pom.xml`, `.github/workflows` o rutas de API). No traducir identificadores internos ni reescribir commits compartidos para cambiar su idioma. Los textos de la propia interfaz de GitHub no pertenecen al proyecto.
 
-Una corrección exclusivamente documental puede partir de main en `correccion/documentacion-espanol`, revisarse mediante PR e integrarse sin publicar código nuevo de EV2. Comprobar que el cambio solo contenga documentos. Después se sincroniza con desarrollo conservando sus guías ampliadas. Esto no sustituye la validación cloud exigida para una entrega funcional.
+El trabajo habitual se realiza en la rama personal matizk y se revisa por PR hacia desarrollo; cada compañero conserva su propia rama. main recibe una entrega o corrección revisada. Se mantienen las convenciones técnicas release/hotfix, sin crear ramas adicionales innecesarias. El mantenimiento documental no sustituye la validación cloud exigida para una entrega funcional.
 
 ### Conservación del historial
 
