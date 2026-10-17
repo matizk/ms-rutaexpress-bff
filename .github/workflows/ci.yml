@@ -1,4 +1,4 @@
-name: CI EV2
+name: Verificación de EV2
 on:
   pull_request:
     branches: [desarrollo, main]
@@ -27,8 +27,8 @@ jobs:
         run: |
           if [[ "$BASE_BRANCH" == main ]]; then
             case "$HEAD_BRANCH" in
-              release/*|hotfix/*) ;;
-              *) printf 'main solo recibe release/hotfix por PR. Funcionalidades hacia desarrollo.\\n'; exit 1 ;;
+              entrega/*|correccion/*) ;;
+              *) printf 'main solo recibe entrega/corrección por PR. Funcionalidades hacia desarrollo.\\n'; exit 1 ;;
             esac
           fi
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5

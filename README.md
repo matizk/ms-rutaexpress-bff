@@ -1,6 +1,6 @@
-# ms-rutaexpress-bff
+# ms-rutaexpress-intermediario
 
-> Versión de integración EV2: `desarrollo`, mediante el [PR #2](https://github.com/matizk/ms-rutaexpress-bff/pull/2). `main` conserva EV1 hasta una release validada. Ver [Gitflow](CONTRIBUTING.md). El login institucional y AWS/RDS siguen pendientes de verificación real.
+> Versión de integración EV2: `desarrollo`, mediante el [PR #2](https://github.com/matizk/ms-rutaexpress-intermediario/pull/2). `main` conserva EV1 hasta una entrega validada. Ver [Gitflow](COLABORACION.md). El login institucional y AWS/RDS siguen pendientes de verificación real.
 
 BFF de RutaExpress para DSY1107, con administración de EV1 y rutas del operador/mensajería de EV2.
 
@@ -126,7 +126,7 @@ con identificadores ficticios, no con un User Pool real.
 
 ## Antecedente de EV1: no acredita el despliegue EV2
 
-La documentación anterior de EV1 describía estos componentes en AWS. No se han vuelto a verificar aquí y NO son instrucciones de despliegue EV2; esta última exige RDS, identidad Azure para operador y rutas separadas. Usar el paquete `ms-rutaexpress-shipments/deploy/aws/README.md`, no copiar el catch-all anterior:
+La documentación anterior de EV1 describía estos componentes en AWS. No se han vuelto a verificar aquí y NO son instrucciones de despliegue EV2; esta última exige RDS, identidad Azure para operador y rutas separadas. Usar el paquete `ms-rutaexpress-envios/deploy/aws/README.md`, no copiar el catch-all anterior:
 
 - Cognito User Pool, App Client público sin client secret, Managed Login y grupo
   exacto `Admin`.
@@ -153,12 +153,12 @@ para esta entrega.
 
 ## Rutas EV2 de mensajería
 
-`/api/messaging/**` y `/api/rabbitmq/**` se enrutan a `MESSAGING_URL` (por defecto `http://localhost:8084`). Conservan JWT Cognito y grupo Admin; el bearer token se reenvía al servicio, que también lo valida. El stack EV2 y su prueba se ejecutan desde la carpeta hermana `ms-rutaexpress-shipments`, según `EV2_LOCAL.md`.
+`/api/messaging/**` y `/api/rabbitmq/**` se enrutan a `MESSAGING_URL` (por defecto `http://localhost:8084`). Conservan JWT Cognito y grupo Admin; el bearer token se reenvía al servicio, que también lo valida. El stack EV2 y su prueba se ejecutan desde la carpeta hermana `ms-rutaexpress-envios`, según `EV2_LOCAL.md`.
 
 ## Operador Azure (código preparado, tenant real pendiente)
 
-El BFF admite opcionalmente tokens delegados Azure v2 del tenant, API y SPA configurados, además de Cognito. Azure solo habilita GET de `/api/operator/shipments`, su detalle y `/api/operator/confirmations/{codigo}`, y POST de `/api/operator/shipments/{id}/accept`. Envíos y Mensajería vuelven a comprobar el token. No concede Catálogo, Reportes, Usuarios ni Rabbit Admin al operador. La selección de claves solo usa emisores preconfigurados; nunca una URL recibida del JWT. Azure está deshabilitado por defecto. Configuración y prueba institucional pendiente en `frontend-rutaexpress/docs/AZURE_OPERADOR.md`; el script hermano `ms-rutaexpress-shipments/configurar-azure.ps1` mantiene los valores alineados.
+El BFF admite opcionalmente tokens delegados Azure v2 del tenant, API y SPA configurados, además de Cognito. Azure solo habilita GET de `/api/operator/shipments`, su detalle y `/api/operator/confirmations/{codigo}`, y POST de `/api/operator/shipments/{id}/accept`. Envíos y Mensajería vuelven a comprobar el token. No concede Catálogo, Reportes, Usuarios ni Rabbit Admin al operador. La selección de claves solo usa emisores preconfigurados; nunca una URL recibida del JWT. Azure está deshabilitado por defecto. Configuración y prueba institucional pendiente en `interfaz-rutaexpress/docs/AZURE_OPERADOR.md`; el script hermano `ms-rutaexpress-envios/configurar-azure.ps1` mantiene los valores alineados.
 
 ## Gitflow EV2
 
-La versión de integración está destinada a `desarrollo` por el PR enlazado; `main` conserva la entrega anterior hasta una release aprobada. Ver [CONTRIBUTING.md](CONTRIBUTING.md). CI ejecuta Maven verify en Java 21 sin credenciales cloud. No confundir un PR o una prueba local con login Azure/AWS verificados.
+La versión de integración está destinada a `desarrollo` por el PR enlazado; `main` conserva la entrega anterior hasta una entrega aprobada. Ver [COLABORACION.md](COLABORACION.md). CI ejecuta Maven verify en Java 21 sin credenciales cloud. No confundir un PR o una prueba local con login Azure/AWS verificados.
