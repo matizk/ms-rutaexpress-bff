@@ -1,6 +1,6 @@
 # ms-rutaexpress-bff
 
-> Versión de integración EV2: `develop`, mediante el [PR #2](https://github.com/matizk/ms-rutaexpress-bff/pull/2). `main` conserva EV1 hasta una release validada. Ver [Gitflow](CONTRIBUTING.md). El login institucional y AWS/RDS siguen pendientes de verificación real.
+> Versión de integración EV2: `desarrollo`, mediante el [PR #2](https://github.com/matizk/ms-rutaexpress-bff/pull/2). `main` conserva EV1 hasta una release validada. Ver [Gitflow](CONTRIBUTING.md). El login institucional y AWS/RDS siguen pendientes de verificación real.
 
 BFF de RutaExpress para DSY1107, con administración de EV1 y rutas del operador/mensajería de EV2.
 
@@ -161,4 +161,4 @@ El BFF admite opcionalmente tokens delegados Azure v2 del tenant, API y SPA conf
 
 ## Gitflow EV2
 
-La versión de integración está destinada a `develop` por el PR enlazado; `main` conserva la entrega anterior hasta una release aprobada. Ver [CONTRIBUTING.md](CONTRIBUTING.md). CI ejecuta Maven verify en Java 21 sin credenciales cloud. No confundir un PR o una prueba local con login Azure/AWS verificados.
+La versión de integración está destinada a `desarrollo` por el PR enlazado; `main` conserva la entrega anterior hasta una release aprobada. Ver [CONTRIBUTING.md](CONTRIBUTING.md). CI ejecuta Maven verify en Java 21 sin credenciales cloud. No confundir un PR o una prueba local con login Azure/AWS verificados.

@@ -1,29 +1,32 @@
-# Flujo de colaboracion (Gitflow)
+# Organización de ramas y colaboración
 
-## Ramas y estado
+Convención acordada por el equipo el 17-10-2026: `matizk` para el trabajo personal y `desarrollo` para integrar. Es un flujo inspirado en Gitflow, adaptado a ramas personales; no se exige que cada integrante comparta la rama matizk.
 
-- `main`: entrega estable anterior. No subir EV2 directamente aqui ni presentar la infraestructura pendiente como terminada.
-- `develop`: base de integracion; recibe funcionalidades por pull request revisado.
-- `codex/feature-ev2-mensajeria`: rama de implementación inicial de EV2, conservada como historial del PR. El código integrado se continúa desde `develop`; esta feature no es otra rama estable.
-- `codex/release-<version>`: crear desde develop cuando la integracion este aprobada. PR a main y posterior sincronizacion con develop.
-- `codex/hotfix-<descripcion>`: solo correcciones urgentes de main, con retorno tambien a develop.
+## Ramas
 
-No se crean releases, etiquetas de entrega o hotfix ficticios para aparentar etapas no realizadas. No reescribir historia compartida ni usar force-push.
+- `main`: entrega estable anterior. Solo recibe una release/hotfix revisada; no subir cambios directamente.
+- `desarrollo`: integración del equipo; recibe cambios mediante pull request revisado.
+- `matizk`: rama personal de esta copia. Se actualiza desde desarrollo antes de continuar, preservando cambios propios.
+- Los otros integrantes conservan sus ramas personales y abren sus PR hacia desarrollo.
+- `release/<version>`: preparar desde desarrollo cuando estén aprobadas las pruebas institucionales/cloud; PR a main y sincronización posterior con desarrollo.
+- `hotfix/<descripcion>`: corrección urgente de main, con retorno también a desarrollo.
 
-## Colaborar sin perder trabajo
+Flujo habitual: rama personal → PR a desarrollo → revisión/pruebas → merge commit. No crear nombres o commits para aparentar participación. El código integrado no equivale a despliegue ni a evaluación terminada.
 
-1. Clonar este repositorio y las otras carpetas de componentes como hermanas; seguir el README de EV2.
-2. Ejecutar `git fetch origin` y `git status`. Conservar/confirmar cambios propios antes de cambiar de rama. No usar reset --hard.
-3. Tras comprobar la fusión del PR EV2, usar `git switch --track origin/develop` (si existe local, `git switch develop`) y `git pull --ff-only origin develop`. Si hay divergencia o cambios propios, detenerse y coordinarlos; no forzar.
-4. Para trabajo nuevo crear una rama desde `develop` actualizado, por ejemplo `git switch -c codex/feature-integracion-azure`. Revisar el estado del PR original si aún figura abierto; no asumir que clonar main contiene EV2.
-5. Crear una rama propia, commits descriptivos y PR a develop. Describir pruebas, dependencias entre repositorios y limites cloud.
-6. Revisar diferencias y CI. Integrar con merge commit para conservar la rama y el PR; no borrar historia para simular trabajo de otros integrantes.
-7. Solo despues de login institucional y recorrido AWS/RDS/API Gateway reales, preparar release, revisar el PR a main y etiquetar la version aprobada.
+## Actualizar esta copia personal sin perder trabajo
 
-El codigo puede estar publicado en una feature sin que este integrado en develop. Un PR abierto o un check verde NO equivale a despliegue listo ni a aprobacion de la profesora.
+1. Revisar `git status`; conservar cambios propios antes de cambiar de rama.
+2. Ejecutar `git fetch origin --prune`. La rama de integración ahora se llama desarrollo. Si esta copia fue clonada con una sola rama y no aparece origin/desarrollo, usar `git remote set-branches --add origin desarrollo` y volver a hacer fetch.
+3. Usar `git switch matizk` si existe local; si solo existe en el remoto, `git switch --track origin/matizk`.
+4. Ejecutar `git merge --ff-only origin/desarrollo`. Si hay divergencia, detenerse y coordinar la integración sin reset ni force-push; no sobrescribir trabajo propio o de otros.
+5. Realizar los cambios, ejecutar pruebas, crear commits descriptivos y subir con `git push -u origin matizk`.
+6. Abrir PR con base desarrollo y comparar matizk. Explicar alcance, pruebas, dependencias y pendientes reales; integrar con merge commit.
+7. Después del merge, actualizar la rama personal nuevamente desde origin/desarrollo antes de seguir. Los demás integrantes hacen lo mismo con SUS ramas.
 
-## Seguridad y evidencia
+Para ejecutar el proyecto y migrar una copia que aún tenga develop, consultar la [guía central del equipo](https://github.com/matizk/ms-rutaexpress-shipments/blob/desarrollo/PREPARACION_EQUIPO_EV2.md). No clonar encima de cambios existentes.
 
-No subir .env reales, passwords, tokens, claves privadas, node_modules, target, modelos ni fotos/audios de clase. Los IDs de aplicaciones son publicos, pero nunca sustituyen contrasenas ni consentimiento. Los tests locales con claves generadas/fixtures no acreditan login Duoc real.
+## Historial y seguridad
 
-Los workflows solo prueban codigo, con permisos de lectura; no despliegan AWS/Azure y no necesitan sus credenciales. Los integrantes realizan sus propios commits con su identidad: no se inventa autoria ni se distribuyen commits artificialmente.
+El renombrado no reescribe commits ni elimina PR antiguos. Los informes fechados y los PR anteriores conservan los nombres utilizados entonces; no son instrucciones para crear de nuevo esas ramas. Solo se retiran referencias antiguas totalmente integradas y sin PR abiertos. No borrar historia compartida ni inventar autoría.
+
+No publicar .env reales, passwords, bearer tokens, claves, datos personales ni fotos/audios de clase. Los tests con claves generadas y PostgreSQL local no acreditan login Duoc, RDS ni AWS reales. Los workflows prueban con permisos de lectura y sin credenciales cloud; no despliegan recursos.
