@@ -1,6 +1,6 @@
 # ms-rutaexpress-bff
 
-> Versión de integración EV2: `desarrollo`, mediante el [PR #2](https://github.com/matizk/ms-rutaexpress-bff/pull/2). `main` conserva EV1 hasta una entrega validada. Ver [Gitflow](COLABORACION.md). El login institucional y AWS/RDS siguen pendientes de verificación real.
+> Versión de integración EV2: `desarrollo`, mediante el [PR #2](https://github.com/matizk/ms-rutaexpress-bff/pull/2). `main` conserva EV1 hasta una entrega validada. Ver [Gitflow](COLABORACION.md). Actualización documental del 21-10-2026 en `matizk`: el integrante completó el flujo Azure Duoc y Daniel confirmó el mismo caso en RDS/RabbitMQ; [fuentes y pendientes del equipo](https://github.com/matizk/ms-rutaexpress-envios/blob/matizk/CONTINUAR_EV2_EQUIPO.md). No declara una nueva integración o despliegue de este repositorio.
 
 BFF de RutaExpress para DSY1107, con administración de EV1 y rutas del operador/mensajería de EV2.
 
@@ -155,9 +155,9 @@ para esta entrega.
 
 `/api/messaging/**` y `/api/rabbitmq/**` se enrutan a `MESSAGING_URL` (por defecto `http://localhost:8084`). Conservan JWT Cognito y grupo Admin; el bearer token se reenvía al servicio, que también lo valida. El stack EV2 y su prueba se ejecutan desde la carpeta hermana `ms-rutaexpress-envios`, según `EV2_LOCAL.md`.
 
-## Operador Azure (código preparado, tenant real pendiente)
+## Operador Azure
 
-El BFF admite opcionalmente tokens delegados Azure v2 del tenant, API y SPA configurados, además de Cognito. Azure solo habilita GET de `/api/operator/shipments`, su detalle y `/api/operator/confirmations/{codigo}`, y POST de `/api/operator/shipments/{id}/accept`. Envíos y Mensajería vuelven a comprobar el token. No concede Catálogo, Reportes, Usuarios ni Rabbit Admin al operador. La selección de claves solo usa emisores preconfigurados; nunca una URL recibida del JWT. Azure está deshabilitado por defecto. Configuración y prueba institucional pendiente en `frontend-rutaexpress/docs/AZURE_OPERADOR.md`; el script hermano `ms-rutaexpress-envios/configurar-azure.ps1` mantiene los valores alineados.
+El BFF admite tokens delegados Azure v2 del tenant, API y SPA configurados, además de Cognito. Azure solo habilita GET de `/api/operator/shipments`, su detalle y `/api/operator/confirmations/{codigo}`, y POST de `/api/operator/shipments/{id}/accept`. Envíos y Mensajería vuelven a comprobar el token. No concede Catálogo, Reportes, Usuarios ni Rabbit Admin al operador. La selección de claves solo usa emisores preconfigurados; nunca una URL recibida del JWT. La opción permanece deshabilitada por defecto en un laboratorio nuevo hasta definir sus variables, pero el despliegue del equipo ya se configuró y el caso institucional `RX-1792623980566` se completó. Configuración vigente y límites en `frontend-rutaexpress/docs/AZURE_OPERADOR.md`; el script hermano `ms-rutaexpress-envios/configurar-azure.ps1` permite mantener valores alineados sin crear otro tenant.
 
 ## Gitflow EV2
 
