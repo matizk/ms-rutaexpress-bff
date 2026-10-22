@@ -1,6 +1,8 @@
 # ms-rutaexpress-bff
 
-> Versión de integración EV2: `desarrollo`, mediante el [PR #2](https://github.com/matizk/ms-rutaexpress-bff/pull/2). `main` conserva EV1 hasta una entrega validada. Ver [Gitflow](COLABORACION.md). Actualización documental del 21-10-2026 en `matizk`: el integrante completó el flujo Azure Duoc y Daniel confirmó el mismo caso en RDS/RabbitMQ; [fuentes y pendientes del equipo](https://github.com/matizk/ms-rutaexpress-envios/blob/matizk/CONTINUAR_EV2_EQUIPO.md). No declara una nueva integración o despliegue de este repositorio.
+> Entrega de código EV2 del 22-10-2026: publicación mediante `release/ev2` → PR a `main`, con historial conservado. `main` es la rama estable; `desarrollo` integra y `matizk` conserva el trabajo personal. Ver [Gitflow](COLABORACION.md). La promoción del código no despliega AWS ni sustituye las evidencias, el informe o la presentación.
+
+El integrante completó el flujo Azure Duoc del caso `RX-1792623980566` y Daniel confirmó el mismo evento en RDS/RabbitMQ. La documentación del [PR #8](https://github.com/matizk/ms-rutaexpress-bff/pull/8) ya se integró en `desarrollo`, con CI Java aprobado. [Fuentes y pendientes del equipo](https://github.com/matizk/ms-rutaexpress-envios/blob/desarrollo/CONTINUAR_EV2_EQUIPO.md).
 
 BFF de RutaExpress para DSY1107, con administración de EV1 y rutas del operador/mensajería de EV2.
 
