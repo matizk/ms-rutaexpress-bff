@@ -1,13 +1,15 @@
-# Ayuda técnica
+# Ayuda técnica: servicio intermediario
 
-Esta rama main conserva el código de la entrega anterior. Consultar [README.md](README.md) y [COLABORACION.md](COLABORACION.md) para conocer su alcance y el flujo del equipo.
+El BFF recibe las solicitudes de Angular/API Gateway, valida identidad y permisos y las dirige al microservicio correspondiente. No administra una base de datos propia.
 
-Para instalar y ejecutar la versión EV2, usar la [guía central de desarrollo](https://github.com/matizk/ms-rutaexpress-envios/blob/desarrollo/CONTINUAR_EV2_EQUIPO.md), no las instrucciones históricas de EV1.
+- [Configuración, rutas y pruebas del servicio](README.md).
+- [Organización de ramas y colaboración](COLABORACION.md).
+- [Guía completa del equipo](https://github.com/matizk/ms-rutaexpress-envios/blob/desarrollo/CONTINUAR_EV2_EQUIPO.md).
 
-Referencias oficiales (pueden estar en inglés):
+Referencias oficiales (los sitios pueden estar en inglés):
 
 - [Documentación de Apache Maven](https://maven.apache.org/guides/index.html).
 - [Complemento Maven de Spring Boot](https://docs.spring.io/spring-boot/4.1.1/maven-plugin).
-- [Guías de Spring](https://spring.io/guides).
+- [Seguridad y validación de tokens OAuth2 en Spring](https://docs.spring.io/spring-security/reference/reactive/oauth2/resource-server/index.html).
 
-Los comandos y nombres técnicos de herramientas no se traducen. No publicar contraseñas, archivos .env privados ni tokens.
+Los nombres de bibliotecas, claves de configuración y comandos son identificadores técnicos y no se traducen. No publicar contraseñas ni tokens al solicitar ayuda.
