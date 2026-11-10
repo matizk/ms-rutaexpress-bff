@@ -55,6 +55,9 @@ public class SecurityConfig {
                                 "/api/operator/confirmations/*").hasAnyRole("ADMIN", "OPERATOR")
                         .pathMatchers(HttpMethod.POST, "/api/operator/shipments/*/accept").hasAnyRole("ADMIN", "OPERATOR")
                         .pathMatchers("/api/operator/**").denyAll()
+                        .pathMatchers(HttpMethod.GET, "/api/customer/services", "/api/customer/shipments").hasRole("CUSTOMER")
+                        .pathMatchers(HttpMethod.POST, "/api/customer/shipments").hasRole("CUSTOMER")
+                        .pathMatchers("/api/customer/**").denyAll()
                         .pathMatchers("/api/**").hasRole("ADMIN")
                         .anyExchange().denyAll())
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt
