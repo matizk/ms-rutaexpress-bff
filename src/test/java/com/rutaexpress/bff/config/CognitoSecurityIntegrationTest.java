@@ -37,6 +37,7 @@ class CognitoSecurityIntegrationTest {
     private static final String API = "22222222-2222-4222-8222-222222222222";
     private static final String SPA = "33333333-3333-4333-8333-333333333333";
     private static final String AZURE_ISSUER = "https://login.microsoftonline.com/" + TENANT + "/v2.0";
+    private static final String KAFKA_TOPICS = "/api/report/kafka/topics";
     private static final RSAKey KEY = generateKey();
     private static final RSAKey UNTRUSTED_KEY = generateKey();
     private static final DisposableServer STUB = HttpServer.create().host("127.0.0.1").port(0)
@@ -45,6 +46,8 @@ class CognitoSecurityIntegrationTest {
                             .header("Content-Type", "application/json")
                             .sendString(Mono.just(new JWKSet(KEY.toPublicJWK()).toString())))
                     .get("/api/shipments", (req, res) -> res.sendString(Mono.just("shipments")))
+                    .get("/api/customer/shipments", (req, res) -> res.sendString(Mono.just("customer-shipments")))
+                    .post("/api/customer/shipments", (req, res) -> res.status(201).sendString(req.receive().asString()))
                     .get("/api/shipments/track/RX-0001", (req, res) -> res.sendString(Mono.just("tracking")))
                     .get("/api/catalog/services", (req, res) -> res.sendString(Mono.just("catalog")))
                     .get("/api/report/kpis", (req, res) -> res.sendString(Mono.just("report")))
@@ -56,6 +59,13 @@ class CognitoSecurityIntegrationTest {
                     .post("/api/shipments", (req, res) -> res.status(201).sendString(req.receive().asString())))
             .bindNow();
     private static final String ISSUER = "http://127.0.0.1:" + STUB.port();
+    private static final DisposableServer KAFKA_ADMIN = HttpServer.create().host("127.0.0.1").port(0)
+            .route(routes -> routes
+                    .get(KAFKA_TOPICS, (req, res) -> res.sendString(Mono.just("kafka-admin")))
+                    .post(KAFKA_TOPICS, (req, res) -> res.status(201).send())
+                    .put(KAFKA_TOPICS + "/{topic}/retention", (req, res) -> res.status(204).send())
+                    .delete(KAFKA_TOPICS + "/{topic}", (req, res) -> res.status(204).send()))
+            .bindNow();
 
     @Autowired WebTestClient web;
 
@@ -66,6 +76,7 @@ class CognitoSecurityIntegrationTest {
         registry.add("CATALOGO_URL", () -> ISSUER);
         registry.add("SHIPMENTS_URL", () -> ISSUER);
         registry.add("REPORT_URL", () -> ISSUER);
+        registry.add("KAFKA_ADMIN_URL", () -> "http://127.0.0.1:" + KAFKA_ADMIN.port());
         registry.add("MESSAGING_URL", () -> ISSUER);
         registry.add("CORS_ALLOWED_ORIGIN", () -> ORIGIN);
         registry.add("app.security.azure.enabled", () -> "true");
@@ -76,7 +87,10 @@ class CognitoSecurityIntegrationTest {
         registry.add("app.security.azure.jwk-set-uri", () -> ISSUER + "/.well-known/jwks.json");
     }
 
-    @AfterAll static void stopStub() { STUB.disposeNow(); }
+    @AfterAll static void stopStubs() {
+        STUB.disposeNow();
+        KAFKA_ADMIN.disposeNow();
+    }
 
     @Test void healthIsPublic() {
         web.get().uri("/actuator/health").exchange().expectStatus().isOk()
@@ -90,6 +104,31 @@ class CognitoSecurityIntegrationTest {
     @Test void publicTrackingDoesNotRequireBearer() {
         web.get().uri("/api/shipments/track/RX-0001").exchange().expectStatus().isOk()
                 .expectBody(String.class).isEqualTo("tracking");
+    }
+
+    @Test void kafkaAdminRoutesGoToTheirOwnService() {
+        String access = token(b -> {});
+        String topic = KAFKA_TOPICS + "/rutaexpress.demo.prueba";
+        web.get().uri(KAFKA_TOPICS).headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("kafka-admin");
+        web.post().uri(KAFKA_TOPICS).headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isCreated();
+        web.put().uri(topic + "/retention").headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isNoContent();
+        web.delete().uri(topic).headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isNoContent();
+    }
+
+    @Test void kafkaAdminRoutesRejectAnonymousCustomerAndOperator() {
+        web.get().uri(KAFKA_TOPICS).exchange().expectStatus().isUnauthorized();
+        String customer = token(b -> b.claim("cognito:groups", null));
+        web.get().uri(KAFKA_TOPICS).headers(h -> h.setBearerAuth(customer))
+                .exchange().expectStatus().isForbidden();
+        web.post().uri(KAFKA_TOPICS).headers(h -> h.setBearerAuth(customer))
+                .exchange().expectStatus().isForbidden();
+        web.delete().uri(KAFKA_TOPICS + "/rutaexpress.demo.prueba")
+                .headers(h -> h.setBearerAuth(azureToken(b -> {})))
+                .exchange().expectStatus().isForbidden();
     }
 
     @Test void malformedBearerIsUnauthorized() {
@@ -241,6 +280,31 @@ class CognitoSecurityIntegrationTest {
                         b.claim("cognito:groups", List.of("Cliente")))))
                 .exchange().expectStatus().isForbidden();
     }
+    @Test void customerCanReadServicesAndPlaceOrdersButCannotUseAdminRoutes() {
+        String access = token(b -> b.claim("cognito:groups", null));
+        web.get().uri("/api/customer/services").headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("catalog");
+        web.get().uri("/api/customer/shipments").headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("customer-shipments");
+        web.post().uri("/api/customer/shipments").headers(h -> h.setBearerAuth(access))
+                .header("Content-Type", "application/json").bodyValue("{\"test\":true}")
+                .exchange().expectStatus().isCreated();
+        for (String path : List.of("/api/report/kpis", "/api/shipments", "/api/operator/shipments")) {
+            web.get().uri(path).headers(h -> h.setBearerAuth(access)).exchange().expectStatus().isForbidden();
+        }
+        web.delete().uri("/api/customer/shipments").headers(h -> h.setBearerAuth(access))
+                .exchange().expectStatus().isForbidden();
+    }
+
+    @Test void customerRoutesRequireAClientIdentityFromCognito() {
+        web.get().uri("/api/customer/shipments").exchange().expectStatus().isUnauthorized();
+        for (String access : List.of(token(b -> {}), azureToken(b -> {}),
+                token(b -> b.claim("cognito:groups", null).subject(null)))) {
+            web.get().uri("/api/customer/shipments").headers(h -> h.setBearerAuth(access))
+                    .exchange().expectStatus().isForbidden();
+        }
+    }
+
     @Test void rejectsWrongAzureTenantAudienceClientScopeAndIdToken() {
         for (Consumer<JWTClaimsSet.Builder> edit : List.<Consumer<JWTClaimsSet.Builder>>of(
                 b -> b.claim("tid", "other-tenant"), b -> b.audience(SPA),

@@ -24,10 +24,30 @@ spring:
           predicates:
             - Path=/api/shipments/**
 
+        - id: customer-shipments
+          uri: ${SHIPMENTS_URL:http://localhost:5000}
+          predicates:
+            - Path=/api/customer/shipments
+            - Method=GET,POST
+
+        - id: customer-services
+          uri: ${CATALOGO_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/customer/services
+            - Method=GET
+          filters:
+            - SetPath=/api/catalog/services
+
         - id: users
           uri: ${SHIPMENTS_URL:http://localhost:5000}
           predicates:
             - Path=/api/users/**
+
+        - id: kafka-admin
+          order: -1
+          uri: ${KAFKA_ADMIN_URL:http://localhost:8085}
+          predicates:
+            - Path=/api/report/kafka/topics,/api/report/kafka/topics/**
 
         - id: report
           uri: ${REPORT_URL:http://localhost:8082}

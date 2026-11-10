@@ -15,6 +15,8 @@ public class CognitoGrantedAuthoritiesConverter implements Converter<Jwt, Collec
         if (groups instanceof Collection<?> values && values.contains("Admin")) {
             return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
-        return List.of();
+        String subject = jwt.getSubject();
+        return subject != null && !subject.isBlank() && subject.length() <= 128
+                ? List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER")) : List.of();
     }
 }
