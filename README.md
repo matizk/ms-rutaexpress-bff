@@ -1,5 +1,13 @@
 # ms-rutaexpress-bff
 
+## RutaExpress EV3
+
+El BFF recibe `/api` desde API Gateway y aplica autorización con JWT antes de enrutar a los microservicios. Cognito con el grupo exacto `Admin` permite las rutas administrativas y la reportería; una cuenta Cognito confirmada sin ese grupo accede a `GET /api/customer/services` y a `GET`/`POST /api/customer/shipments`, limitadas a sus propios pedidos por Envíos. Los tokens de Microsoft Entra ID permiten las rutas del Operador. `GET /api/shipments/track/**` permanece público.
+
+Las rutas `/api/report/kafka/topics` y sus subrutas van al microservicio Kafka Admin mediante `KAFKA_ADMIN_URL` (puerto interno 8085 en Compose) y requieren Admin. La ruta de Reportes usa `REPORT_URL`; Catálogo, Envíos y Mensajería usan sus variables de destino correspondientes. El BFF comprueba firma, emisor, vigencia y claims de los JWT y no confía en el perfil que muestre Angular. Las pruebas de integración verifican rechazo de Cliente y Operador en Kafka Admin; en el entorno AWS se debe comprobar también la autorización con sesiones reales.
+
+El despliegue EV3 de aplicaciones, Kafka y su red privada se describe en `ms-rutaexpress-envios/deploy/aws/EV3_DESPLIEGUE.md`. Los apartados EV2 siguientes son antecedentes y sus identificadores o resultados fechados no sustituyen la configuración del laboratorio actual. Las credenciales y los archivos `.env` no se versionan.
+
 > Entrega de código EV2 del 22-10-2026: publicación mediante `release/ev2` → PR a `main`, con historial conservado. `main` es la rama estable; `desarrollo` integra y `matizk` conserva el trabajo personal. Ver [Gitflow](COLABORACION.md). La promoción del código no despliega AWS ni sustituye las evidencias, el informe o la presentación.
 
 El integrante completó el flujo Azure Duoc del caso `RX-1792623980566` y Daniel confirmó el mismo evento en RDS/RabbitMQ. La documentación del [PR #8](https://github.com/matizk/ms-rutaexpress-bff/pull/8) ya se integró en `desarrollo`, con CI Java aprobado. [Fuentes y pendientes del equipo](https://github.com/matizk/ms-rutaexpress-envios/blob/desarrollo/CONTINUAR_EV2_EQUIPO.md).
